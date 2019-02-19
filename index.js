@@ -57,7 +57,41 @@ server.get('/api/zoos/:id', (req, res) => {
     })
 });
 
+server.delete('/api/zoos/:id', (req, res) => {
+  db('zoos')
+    .where({id: req.params.id})
+    .del()
+    .then(count => {
+      if(count > 0){
+        res.status(204).end();
+      }else{
+        res.status(404).json({ message:"Couldn't find zoo with this ID" })
+      }
+    })
+    .catch(error => {
+      res.status(500).json({ message:"Server couldn't complete delete request", error })
+    })
+});
 
+server.put('/api/zoos/:id', (req, res) => {
+  try {
+    db('zoos')
+      .where({id: req.params.id})
+      .update(req.body)
+      .then(count => {
+        if(count){
+          res.status(200).json({ message: `Zoo with ID ${req.params.id} was updated to ${req.body.name}`})
+        }else{
+          res.status(404).json({ message: `Couldn't find zoo with ID ${req.params.id}` })
+        }
+      })
+      .catch(error => {
+        res.status(400).json({ message: "Bad request, please provide a name", error })
+      })
+  } catch (error) {
+    res.status(500).json({ message: "Server could not update data", error })
+  }
+});
 
 const port = 3300;
 server.listen(port, function() {
